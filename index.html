@@ -3,39 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
 <title>AFTER CHEATS - PAINEL</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-body { background-color: #121212; color: #ffffff; }
+body { background-color: #121212; color: #ffffff; overflow: hidden; }
 .text-orange { color: #ff6600; }
 .bg-orange { background-color: #ff6600; color: #fff; border: none; cursor: pointer; }
 .bg-orange:hover { background-color: #e65c00; }
 input, select { background-color: #1e1e1e; border: 1px solid #ff6600; color: #fff; padding: 10px; border-radius: 5px; outline: none; width: 100%; margin-bottom: 15px; }
 button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; }
 .btn-small { padding: 5px 10px; font-size: 12px; margin-right: 5px; }
-.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0a0a0a; }
+
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0a0a0a; z-index: 2000; position: absolute; width: 100%; top: 0; left: 0; transition: opacity 0.5s; }
 .login-box { background-color: #1a1a1a; padding: 40px; border-radius: 10px; border: 2px solid #ff6600; width: 90%; max-width: 400px; text-align: center; }
 .login-box img { width: 100px; margin-bottom: 20px; }
-.dashboard { display: none; display: flex; height: 100vh; }
-.sidebar { width: 250px; background-color: #1a1a1a; border-right: 2px solid #ff6600; padding: 20px 0; transition: 0.3s; display: flex; flex-direction: column; }
+.loader { border: 4px solid #1a1a1a; border-top: 4px solid #ff6600; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.dashboard { display: none; height: 100vh; flex-direction: column; opacity: 0; transform: scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.dashboard.show { opacity: 1; transform: scale(1); }
+
+.top-bar { display: flex; align-items: center; padding: 15px 20px; background-color: #1a1a1a; border-bottom: 2px solid #ff6600; z-index: 100; position: relative; }
+.menu-btn { background: none; border: none; color: #ff6600; font-size: 28px; cursor: pointer; margin-right: 15px; }
+.top-bar img { height: 30px; }
+
+.sidebar { position: fixed; left: -280px; top: 0; width: 250px; height: 100vh; background-color: #1a1a1a; border-right: 2px solid #ff6600; padding: 20px 0; transition: left 0.4s ease; z-index: 1000; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+.sidebar.open { left: 0; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 20px; border-bottom: 1px solid #333; }
 .sidebar-header img { width: 40px; }
-.menu-btn { background: none; border: none; color: #ff6600; font-size: 24px; cursor: pointer; }
+.close-btn { background: none; border: none; color: #ff6600; font-size: 24px; cursor: pointer; }
+
 .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; }
 .sidebar-menu li { padding: 15px 20px; cursor: pointer; border-left: 3px solid transparent; transition: 0.2s; }
 .sidebar-menu li:hover, .sidebar-menu li.active { background-color: #333; border-left: 3px solid #ff6600; color: #ff6600; }
-.main-content { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: #121212; }
-.tab-content { display: none; }
+
+.main-content { flex-grow: 1; position: relative; overflow: hidden; background-color: #121212; height: calc(100vh - 62px); }
+.tab-content { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 30px; overflow-y: auto; }
 .tab-content.active { display: block; }
+
+@keyframes slideUpIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideUpOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100%); opacity: 0; } }
+@keyframes slideDownIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDownOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
+
+.anim-up-in { animation: slideUpIn 0.4s forwards; }
+.anim-up-out { animation: slideUpOut 0.4s forwards; }
+.anim-down-in { animation: slideDownIn 0.4s forwards; }
+.anim-down-out { animation: slideDownOut 0.4s forwards; }
+
 .card { background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
-.key-item { display: flex; justify-content: space-between; align-items: center; background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff6600; }
+.key-item { display: flex; justify-content: space-between; align-items: center; background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff6600; flex-wrap: wrap; gap: 10px; }
 .key-info { flex-grow: 1; }
-.key-actions { display: flex; }
+.key-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
 .filter-bar select, .filter-bar input { width: auto; flex-grow: 1; margin-bottom: 0; }
 .stats { display: flex; gap: 15px; margin-bottom: 20px; font-size: 14px; flex-wrap: wrap; }
 .stats span { background-color: #1e1e1e; padding: 5px 10px; border-radius: 5px; border: 1px solid #ff6600; }
 .hidden-element { display: none !important; }
+.overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 900; display: none; }
+.overlay.open { display: block; }
+
+.user-list-item { display: flex; justify-content: space-between; background: #2a2a2a; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
 </style>
 </head>
 <body>
@@ -44,27 +73,38 @@ button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 
     <div class="login-box">
         <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
         <h2 class="text-orange" style="margin-bottom: 20px;">AFTER CHEATS</h2>
-        <input type="text" id="loginUser" placeholder="Usuário">
-        <input type="password" id="loginPass" placeholder="Senha">
-        <button class="bg-orange" style="width: 100%;" onclick="fazerLogin()">ENTRAR</button>
+        <div id="loginFormInputs">
+            <input type="text" id="loginUser" placeholder="Usuário">
+            <input type="password" id="loginPass" placeholder="Senha">
+            <button class="bg-orange" style="width: 100%;" onclick="tentarLogin()">ENTRAR</button>
+        </div>
+        <div class="loader" id="loginLoader"></div>
         <p id="loginMsg" style="color: red; margin-top: 15px;"></p>
     </div>
 </div>
 
 <div class="dashboard" id="dashboard">
+    <div class="top-bar">
+        <button class="menu-btn" onclick="abrirSidebar()">☰</button>
+        <h3 class="text-orange">AFTER CHEATS</h3>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="fecharSidebar()"></div>
+
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
-            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <button class="close-btn" onclick="fecharSidebar()">✖</button>
         </div>
         <ul class="sidebar-menu">
-            <li class="active" onclick="mudarAba('gerador', this)">Gerador</li>
-            <li onclick="mudarAba('visualizar', this)">Visualizar</li>
-            <li onclick="mudarAba('resetHwid', this)">Reset HWID</li>
-            <li onclick="mudarAba('mais', this)">Mais</li>
-            <li onclick="mudarAba('addProduto', this)">Add Produto</li>
-            <li onclick="mudarAba('addAdmin', this)">Add Admin</li>
-            <li id="menuSecreto" class="hidden-element" onclick="mudarAba('painelSecreto', this)">Painel Secreto</li>
+            <li class="active" onclick="mudarAba('gerador', 0, this)">Gerador</li>
+            <li onclick="mudarAba('visualizar', 1, this)">Visualizar</li>
+            <li onclick="mudarAba('resetHwid', 2, this)">Reset HWID</li>
+            <li onclick="mudarAba('mais', 3, this)">Mais Tempo</li>
+            <li onclick="mudarAba('addProduto', 4, this)">Add Produto</li>
+            <li id="menuAddAdmin" class="hidden-element" onclick="mudarAba('addAdmin', 5, this)">Add Admin</li>
+            <li id="menuUsuarios" class="hidden-element" onclick="mudarAba('usuarios', 6, this)">Usuários</li>
+            <li id="menuSecreto" class="hidden-element" onclick="mudarAba('painelSecreto', 7, this)">Painel Secreto</li>
             <li onclick="sair()" style="margin-top: 50px; color: red;">Sair</li>
         </ul>
     </div>
@@ -101,6 +141,7 @@ button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 
                     <option value="todas">Plataforma: Todas</option>
                     <option value="Emulador">Emulador</option>
                     <option value="Mobile">Mobile</option>
+                    <option value="Multiplos">Múltiplos</option>
                 </select>
                 <input type="text" id="buscaKey" placeholder="Pesquisar Key..." onkeyup="renderizarKeys()">
             </div>
@@ -130,12 +171,13 @@ button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 
             <h2 class="text-orange" style="margin-bottom: 20px;">Adicionar Produto</h2>
             <div class="card">
                 <input type="text" id="prodIdentificador" placeholder="Identificador (Ex: VIP REPLAY)">
-                <input type="text" id="prodPrefixo" placeholder="Prefixo (Ex: AFTER-CHEATS-REPLAY)">
+                <input type="text" id="prodPrefixo" placeholder="Prefixo (Ex: AFTER-CHEATS)">
                 <select id="prodTipo">
                     <option value="Emulador">Emulador</option>
                     <option value="Mobile">Mobile</option>
+                    <option value="Multiplos">Múltiplos</option>
                 </select>
-                <input type="text" id="prodMsgErro" placeholder="Mensagem erro HWID">
+                <input type="text" id="prodMsgErro" placeholder="Mensagem erro HWID custom">
                 <button class="bg-orange" style="width: 100%;" onclick="addProduto()">ADICIONAR</button>
                 <p id="prodMsg" style="margin-top: 15px;"></p>
             </div>
@@ -146,9 +188,18 @@ button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 
             <div class="card">
                 <input type="text" id="admUser" placeholder="Usuário">
                 <input type="password" id="admPass" placeholder="Senha">
+                <select id="admRole">
+                    <option value="admin">Admin Normal</option>
+                    <option value="boss">Boss (Acesso Total)</option>
+                </select>
                 <button class="bg-orange" style="width: 100%;" onclick="addAdmin()">ADICIONAR</button>
                 <p id="admMsg" style="margin-top: 15px;"></p>
             </div>
+        </div>
+
+        <div id="usuarios" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Gerenciar Usuários</h2>
+            <div class="card" id="listaAdmins"></div>
         </div>
 
         <div id="painelSecreto" class="tab-content">
@@ -167,16 +218,40 @@ let currentUser = "";
 let isBoss = false;
 let keysData = [];
 let produtosData = [];
+let adminsData = [];
+let currentTabIndex = 0;
 
-async function fazerLogin() {
+window.onload = function() {
+    const savedUser = localStorage.getItem("aftercheats_user");
+    const savedPass = localStorage.getItem("aftercheats_pass");
+    if(savedUser && savedPass) {
+        document.getElementById('loginUser').value = savedUser;
+        document.getElementById('loginPass').value = savedPass;
+        tentarLogin();
+    }
+}
+
+async function tentarLogin() {
     const u = document.getElementById('loginUser').value;
     const p = document.getElementById('loginPass').value;
     const msg = document.getElementById('loginMsg');
-    
+    const formInputs = document.getElementById('loginFormInputs');
+    const loader = document.getElementById('loginLoader');
+
+    if(!u || !p) {
+        msg.innerText = "Preencha tudo!";
+        return;
+    }
+
+    formInputs.style.display = 'none';
+    loader.style.display = 'block';
+    msg.innerText = "";
+
     if (u === 'Sevenzzx' && p === 'Xitador') {
         currentUser = u;
         isBoss = true;
-        iniciarPainel();
+        salvarCredenciais(u, p);
+        setTimeout(iniciarPainel, 800);
         return;
     }
 
@@ -185,38 +260,95 @@ async function fazerLogin() {
         const data = await res.json();
         if (data && data.password === p) {
             currentUser = u;
-            isBoss = false;
-            iniciarPainel();
+            isBoss = (data.role === 'boss');
+            salvarCredenciais(u, p);
+            setTimeout(iniciarPainel, 800);
         } else {
-            msg.innerText = "Usuário ou senha incorretos!";
+            throw new Error("invalido");
         }
     } catch(e) {
-        msg.innerText = "Erro ao conectar.";
+        loader.style.display = 'none';
+        formInputs.style.display = 'block';
+        msg.innerText = "Usuário ou senha incorretos!";
+        localStorage.removeItem("aftercheats_user");
+        localStorage.removeItem("aftercheats_pass");
     }
 }
 
+function salvarCredenciais(u, p) {
+    localStorage.setItem("aftercheats_user", u);
+    localStorage.setItem("aftercheats_pass", p);
+}
+
 async function iniciarPainel() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'flex';
-    if (isBoss) document.getElementById('menuSecreto').classList.remove('hidden-element');
+    const loginScreen = document.getElementById('loginScreen');
+    const dash = document.getElementById('dashboard');
+    
+    loginScreen.style.opacity = '0';
+    setTimeout(() => {
+        loginScreen.style.display = 'none';
+        dash.style.display = 'flex';
+        setTimeout(() => dash.classList.add('show'), 50);
+    }, 500);
+
+    if (isBoss) {
+        document.getElementById('menuAddAdmin').classList.remove('hidden-element');
+        document.getElementById('menuUsuarios').classList.remove('hidden-element');
+        document.getElementById('menuSecreto').classList.remove('hidden-element');
+    }
+
     await carregarProdutos();
     await carregarKeys();
+    if(isBoss) await carregarAdmins();
     setInterval(atualizarContadores, 1000);
 }
 
-function mudarAba(idAba, elementoLi) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.getElementById(idAba).classList.add('active');
-    document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-    elementoLi.classList.add('active');
+function abrirSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
 }
 
-function toggleSidebar() {
-    const s = document.getElementById('sidebar');
-    s.style.width = s.style.width === '60px' ? '250px' : '60px';
+function fecharSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+}
+
+function mudarAba(idAba, targetIndex, elementoLi) {
+    if (currentTabIndex === targetIndex) {
+        fecharSidebar();
+        return;
+    }
+
+    const direction = targetIndex > currentTabIndex ? 'up' : 'down';
+    const oldTab = document.querySelector('.tab-content.active');
+    const newTab = document.getElementById(idAba);
+
+    oldTab.classList.remove('anim-up-in', 'anim-down-in', 'anim-up-out', 'anim-down-out');
+    newTab.classList.remove('anim-up-in', 'anim-down-in', 'anim-up-out', 'anim-down-out');
+
+    if (direction === 'up') {
+        oldTab.classList.add('anim-up-out');
+        newTab.classList.add('anim-up-in');
+    } else {
+        oldTab.classList.add('anim-down-out');
+        newTab.classList.add('anim-down-in');
+    }
+
+    setTimeout(() => {
+        oldTab.classList.remove('active');
+        newTab.classList.add('active');
+    }, 10);
+
+    document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+    elementoLi.classList.add('active');
+    
+    currentTabIndex = targetIndex;
+    fecharSidebar();
 }
 
 function sair() {
+    localStorage.removeItem("aftercheats_user");
+    localStorage.removeItem("aftercheats_pass");
     location.reload();
 }
 
@@ -225,7 +357,7 @@ function calcularMs(str) {
     const val = parseInt(str);
     if (str.toUpperCase().endsWith('D')) return val * 86400000;
     if (str.toUpperCase().endsWith('H')) return val * 3600000;
-    return 0;
+    return false;
 }
 
 function gerarString(length) {
@@ -253,7 +385,11 @@ async function addProduto() {
     const msgErr = document.getElementById('prodMsgErro').value;
     const msg = document.getElementById('prodMsg');
 
-    if (!nome || !pref) return msg.innerText = "Preencha tudo!";
+    if (!nome || !pref) {
+        msg.innerText = "Preencha tudo!";
+        msg.style.color = "red";
+        return;
+    }
     
     const id = Date.now().toString();
     const doc = { id: id, name: nome, prefix: pref, type: tipo, hwidErrorMsg: msgErr };
@@ -264,16 +400,46 @@ async function addProduto() {
     carregarProdutos();
 }
 
+async function carregarAdmins() {
+    const res = await fetch(`${DB_URL}/admins.json`);
+    const data = await res.json();
+    adminsData = data ? Object.entries(data).map(([k, v]) => ({username: k, ...v})) : [];
+    
+    const lista = document.getElementById('listaAdmins');
+    lista.innerHTML = "";
+    adminsData.forEach(a => {
+        lista.innerHTML += `
+            <div class="user-list-item">
+                <span><b class="text-orange">${a.username}</b> (${a.role})</span>
+                <button class="bg-orange btn-small" style="background-color:red;" onclick="deletarAdmin('${a.username}')">🗑 Excluir</button>
+            </div>
+        `;
+    });
+}
+
 async function addAdmin() {
     const u = document.getElementById('admUser').value;
     const p = document.getElementById('admPass').value;
+    const role = document.getElementById('admRole').value;
     const msg = document.getElementById('admMsg');
 
-    if (!u || !p) return msg.innerText = "Preencha tudo!";
+    if (!u || !p) {
+        msg.innerText = "Preencha tudo!";
+        msg.style.color = "red";
+        return;
+    }
     
-    await fetch(`${DB_URL}/admins/${u}.json`, { method: 'PUT', body: JSON.stringify({ password: p }) });
+    await fetch(`${DB_URL}/admins/${u}.json`, { method: 'PUT', body: JSON.stringify({ password: p, role: role }) });
     msg.innerText = "Admin adicionado!";
     msg.style.color = "#00ff00";
+    carregarAdmins();
+}
+
+async function deletarAdmin(u) {
+    if(confirm(`Excluir o admin ${u}?`)) {
+        await fetch(`${DB_URL}/admins/${u}.json`, { method: 'DELETE' });
+        carregarAdmins();
+    }
 }
 
 async function gerarKey() {
@@ -281,12 +447,16 @@ async function gerarKey() {
     const tempoStr = document.getElementById('genTempo').value;
     const res = document.getElementById('genResult');
 
-    if (!prodId || tempoStr === "") return res.innerText = "Preencha o tempo!";
+    if (!prodId || tempoStr === "") {
+        res.innerText = "Preencha o tempo!";
+        return;
+    }
     
     const produto = produtosData.find(p => p.id === prodId);
     const ms = calcularMs(tempoStr);
+    if(ms === false) { res.innerText = "Tempo inválido!"; return; }
+
     const keyString = `${produto.prefix}-${gerarString(6)}`;
-    
     const doc = {
         key: keyString,
         productId: prodId,
@@ -457,10 +627,18 @@ async function adicionarTempoKey() {
     const msg = document.getElementById('maisMsg');
     const ms = calcularMs(tempoStr);
     
-    if(ms === false) return msg.innerText = "Tempo inválido!";
+    if(ms === false) {
+        msg.innerText = "Tempo inválido!";
+        msg.style.color = "red";
+        return;
+    }
 
     const k = keysData.find(x => x.key === keyVal);
-    if(!k) return msg.innerText = "Key não encontrada.";
+    if(!k) {
+        msg.innerText = "Key não encontrada.";
+        msg.style.color = "red";
+        return;
+    }
 
     let newExp = k.expiresAt !== null ? k.expiresAt + ms : null;
     await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify({ expiresAt: newExp }) });
@@ -490,4 +668,3 @@ function copiar(texto) {
 </script>
 </body>
 </html>
-
