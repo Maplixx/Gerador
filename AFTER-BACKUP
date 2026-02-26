@@ -1,0 +1,122 @@
+#!/bin/bash
+RED='\e[31m'
+GREEN='\e[32m'
+BLUE='\e[34m'
+NC='\e[0m'
+ORIGEM="/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays"
+DESTINO_PAI="/storage/emulated/0/DCIM/.after_replays"
+ARQUIVO_RESTORE="SAMP.sh"
+
+DB_URL="https://gerador-75d9f-default-rtdb.firebaseio.com"
+
+clear
+echo -e "${RED}"
+echo "   _  ___ ___ ___ ___    ___ _  _ ___  _ _____ ___ "
+echo "  /_\| __|_ _| __| _ \  / __| || | __|/ \_   _/ __|"
+echo " / _ \ _| | || _||   / | (__| __ | _// - \| | \__ \\"
+echo "/_/ \_\_| |___|___|_|_\  \___|_||_|___\_/_/|_| |___/"
+echo -e "${NC}\n"
+
+echo -e "${RED}Baixando Dependencias...${NC}"
+pkg install jq curl -y > /dev/null 2>&1
+
+for i in {1..10}; do
+    echo -ne "${RED}Progresso: $((i*10))%\r${NC}"
+    sleep 0.2
+done
+echo -ne "\n"
+
+echo -ne "${BLUE}Digite sua Key de Acesso: ${NC}"
+read USER_KEY
+
+# Tenta pegar o Android ID e esconde o erro de permissão da tela
+HWID=$(settings get secure android_id 2>/dev/null | tr -d '\r\n')
+
+# Se der erro ou vier vazio, cria o HWID Híbrido p1c4
+if [[ "$HWID" == "" || "$HWID" == *"Exception"* || "$HWID" == *"Denial"* || "$HWID" == *"null"* ]]; then
+    MODELO=$(getprop ro.product.model | tr -d ' ' | tr -d '\r\n')
+    UID_TERMUX=$(id -u | tr -d '\r\n')
+    HWID="${MODELO}-${UID_TERMUX}"
+fi
+
+NOW=$(date +%s)
+NOW_MS=$(($NOW * 1000))
+
+RES=$(curl -s "$DB_URL/keys/$USER_KEY.json")
+
+if [ "$RES" == "null" ]; then
+    echo -e "${RED}ERRO: KEY INVÁLIDA OU NÃO EXISTE!${NC}"
+    exit 1
+fi
+
+STATUS=$(echo "$RES" | jq -r '.status')
+EXP_AT=$(echo "$RES" | jq -r '.expiresAt')
+DB_HWID=$(echo "$RES" | jq -r '.hwid')
+PROD_ID=$(echo "$RES" | jq -r '.productId')
+DURATION_MS=$(echo "$RES" | jq -r '.durationMs')
+
+if [ "$STATUS" == "paused" ]; then
+    echo -e "${RED}ERRO: SUA KEY ESTÁ PAUSADA PELO SUPORTE!${NC}"
+    exit 1
+fi
+
+if [ "$DB_HWID" == "Nenhum" ]; then
+    if [ "$DURATION_MS" != "null" ] && [ "$DURATION_MS" != "0" ]; then
+        NEW_EXP=$(($NOW_MS + $DURATION_MS))
+        curl -s -X PATCH -d '{"hwid":"'"$HWID"'", "expiresAt":'$NEW_EXP'}' "$DB_URL/keys/$USER_KEY.json" > /dev/null
+    else
+        curl -s -X PATCH -d '{"hwid":"'"$HWID"'"}' "$DB_URL/keys/$USER_KEY.json" > /dev/null
+    fi
+elif [ "$DB_HWID" != "$HWID" ]; then
+    PROD_RES=$(curl -s "$DB_URL/produtos/$PROD_ID.json")
+    CUSTOM_MSG=$(echo "$PROD_RES" | jq -r '.hwidErrorMsg')
+    if [ "$CUSTOM_MSG" == "null" ] || [ "$CUSTOM_MSG" == "" ]; then
+        CUSTOM_MSG="Hwid Doens't Match, Solicite O Reset No Suporte"
+    fi
+    echo -e "${RED}ERRO: $CUSTOM_MSG${NC}"
+    exit 1
+else
+    if [ "$EXP_AT" != "null" ] && [ "$EXP_AT" != "0" ] && [ "$NOW_MS" -gt "$EXP_AT" ]; then
+        echo -e "${RED}ERRO: SUA KEY ESTÁ EXPIRADA!${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}KEY VALIDADA COM SUCESSO!${NC}"
+sleep 1
+
+VERSAO_ANDROID=$(getprop ro.build.version.release | sed -E 's/\..*//')
+USAR_SHIZUKU=0
+
+if [ "$VERSAO_ANDROID" -ge 11 ]; then
+    USAR_SHIZUKU=1
+    echo -e "${BLUE}Checando Shizuku...${NC}"
+    sleep 1
+    
+    if rish -c "echo 1" >/dev/null 2>&1; then
+        echo -e "${GREEN}Permissão ok!${NC}"
+        sleep 1
+        echo -e "${RED}"
+    else
+        echo -e "${RED}Erro: Shizuku não está rodando ou sem permissão.${NC}"
+        exit 1
+    fi
+fi
+
+sleep 1
+echo -e "${RED}CLONANDO SAVE${NC}"
+
+for i in {1..10}; do
+    echo -ne "${RED}Progresso: $((i*10))%\r${NC}"
+    sleep 0.2
+done
+echo -ne "\n"
+
+if [ "$USAR_SHIZUKU" -eq 1 ]; then
+    rish -c "mkdir -p $DESTINO_PAI && cp -r $ORIGEM $DESTINO_PAI/"
+else
+    mkdir -p "$DESTINO_PAI"
+    cp -r "$ORIGEM" "$DESTINO_PAI/"
+fi
+
+echo -e "${GREEN}Sucesso, Para Passar Execute o Outro Arquivo ($ARQUIVO_RESTORE)${NC}"
