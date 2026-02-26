@@ -14,44 +14,35 @@ body { background-color: #121212; color: #ffffff; overflow: hidden; }
 input, select { background-color: #1e1e1e; border: 1px solid #ff6600; color: #fff; padding: 10px; border-radius: 5px; outline: none; width: 100%; margin-bottom: 15px; }
 button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; }
 .btn-small { padding: 5px 10px; font-size: 12px; margin-right: 5px; }
-
 .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0a0a0a; z-index: 2000; position: absolute; width: 100%; top: 0; left: 0; transition: opacity 0.5s; }
 .login-box { background-color: #1a1a1a; padding: 40px; border-radius: 10px; border: 2px solid #ff6600; width: 90%; max-width: 400px; text-align: center; }
 .login-box img { width: 100px; margin-bottom: 20px; }
 .loader { border: 4px solid #1a1a1a; border-top: 4px solid #ff6600; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
 .dashboard { display: none; height: 100vh; flex-direction: column; opacity: 0; transform: scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .dashboard.show { opacity: 1; transform: scale(1); }
-
 .top-bar { display: flex; align-items: center; padding: 15px 20px; background-color: #1a1a1a; border-bottom: 2px solid #ff6600; z-index: 100; position: relative; }
 .menu-btn { background: none; border: none; color: #ff6600; font-size: 28px; cursor: pointer; margin-right: 15px; }
 .top-bar img { height: 30px; }
-
 .sidebar { position: fixed; left: -280px; top: 0; width: 250px; height: 100vh; background-color: #1a1a1a; border-right: 2px solid #ff6600; padding: 20px 0; transition: left 0.4s ease; z-index: 1000; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
 .sidebar.open { left: 0; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 20px; border-bottom: 1px solid #333; }
 .sidebar-header img { width: 40px; }
 .close-btn { background: none; border: none; color: #ff6600; font-size: 24px; cursor: pointer; }
-
 .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; }
 .sidebar-menu li { padding: 15px 20px; cursor: pointer; border-left: 3px solid transparent; transition: 0.2s; }
 .sidebar-menu li:hover, .sidebar-menu li.active { background-color: #333; border-left: 3px solid #ff6600; color: #ff6600; }
-
 .main-content { flex-grow: 1; position: relative; overflow: hidden; background-color: #121212; height: calc(100vh - 62px); }
 .tab-content { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 30px; overflow-y: auto; }
 .tab-content.active { display: block; }
-
 @keyframes slideUpIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes slideUpOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100%); opacity: 0; } }
 @keyframes slideDownIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes slideDownOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
-
 .anim-up-in { animation: slideUpIn 0.4s forwards; }
 .anim-up-out { animation: slideUpOut 0.4s forwards; }
 .anim-down-in { animation: slideDownIn 0.4s forwards; }
 .anim-down-out { animation: slideDownOut 0.4s forwards; }
-
 .card { background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
 .key-item { display: flex; justify-content: space-between; align-items: center; background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff6600; flex-wrap: wrap; gap: 10px; }
 .key-info { flex-grow: 1; }
@@ -472,9 +463,9 @@ async function gerarKey() {
         platform: produto.type,
         originalStr: tempoStr,
         durationMs: ms,
-        expiresAt: null, 
+        expiresAt: 0, 
         timeLeft: ms,
-        hwid: "",
+        hwid: "Nenhum",
         status: "active",
         createdAt: Date.now()
     };
@@ -502,12 +493,16 @@ function renderizarKeys() {
     const now = Date.now();
 
     keysData.forEach(k => {
+        k.expiresAt = k.expiresAt || null;
+        k.durationMs = k.durationMs || null;
+        k.hwid = k.hwid || "Nenhum";
+
         let isOnline = false, isUsada = false, isInv = false, isSemUso = false;
         
-        if (k.expiresAt !== null && k.expiresAt < now && k.status !== 'paused') isInv = true;
+        if (k.expiresAt !== null && k.expiresAt !== 0 && k.expiresAt < now && k.status !== 'paused') isInv = true;
         else {
             isOnline = true;
-            if (k.hwid) isUsada = true;
+            if (k.hwid !== "Nenhum") isUsada = true;
             else isSemUso = true;
         }
 
@@ -535,7 +530,7 @@ function renderizarKeys() {
                     <div class="key-info">
                         <strong class="text-orange">${k.key}</strong> [${k.productName} - ${k.platform}]<br>
                         <span style="font-size:12px;" id="time-${k.key}" data-exp="${k.expiresAt}" data-stat="${k.status}" data-dur="${k.durationMs}" data-hwid="${k.hwid}">...</span>
-                        <br><span style="font-size:10px;color:#888;">HWID: ${k.hwid || "Nenhum"}</span>
+                        <br><span style="font-size:10px;color:#888;">HWID: ${k.hwid}</span>
                     </div>
                     <div class="key-actions">
                         <button class="bg-orange btn-small" onclick="abrirModalTempo('${k.key}', '+')">➕</button>
@@ -560,20 +555,21 @@ function renderizarKeys() {
 function atualizarContadores() {
     const now = Date.now();
     document.querySelectorAll('[id^="time-"]').forEach(el => {
-        const exp = el.getAttribute('data-exp');
+        const expStr = el.getAttribute('data-exp');
         const stat = el.getAttribute('data-stat');
         const durStr = el.getAttribute('data-dur');
         const hwid = el.getAttribute('data-hwid');
         
-        let dur = durStr === "null" ? null : parseInt(durStr);
+        let exp = (expStr === "null" || expStr === "0") ? null : parseInt(expStr);
+        let dur = (durStr === "null" || durStr === "0") ? null : parseInt(durStr);
 
-        if (dur === null) {
+        if (dur === null && exp === null) {
             el.innerText = "Tempo: Permanente";
             el.style.color = "#00ff00";
             return;
         }
 
-        if (hwid === "" && exp === "null") {
+        if (hwid === "Nenhum" && exp === null) {
             el.innerText = `Aguardando Uso (${formataMsTexto(dur)})`;
             el.style.color = "#00e5ff";
             return;
@@ -585,7 +581,7 @@ function atualizarContadores() {
             return;
         }
 
-        const diff = parseInt(exp) - now;
+        const diff = exp - now;
         if (diff <= 0) {
             el.innerText = "Expirada";
             el.style.color = "red";
@@ -613,13 +609,13 @@ async function togglePause(key, pause) {
     let updateDoc = {};
     
     if (pause) {
-        let left = k.expiresAt !== null ? k.expiresAt - now : k.durationMs;
+        let left = (k.expiresAt !== null && k.expiresAt !== 0) ? k.expiresAt - now : k.durationMs;
         updateDoc = { status: 'paused', durationMs: left };
     } else {
-        if(k.hwid === "") {
+        if(k.hwid === "Nenhum") {
             updateDoc = { status: 'active' };
         } else {
-            let newExp = k.durationMs !== null ? now + k.durationMs : null;
+            let newExp = (k.durationMs !== null && k.durationMs !== 0) ? now + k.durationMs : 0;
             updateDoc = { status: 'active', expiresAt: newExp };
         }
     }
@@ -633,8 +629,8 @@ async function resetarHwid() {
     const msg = document.getElementById('resMsg');
     const k = keysData.find(x => x.key === keyVal);
     if(k) {
-        let updateDoc = { hwid: "", expiresAt: null };
-        if(k.expiresAt !== null) {
+        let updateDoc = { hwid: "Nenhum", expiresAt: 0 };
+        if(k.expiresAt !== null && k.expiresAt !== 0) {
             let tempoRestante = k.expiresAt - Date.now();
             updateDoc.durationMs = tempoRestante > 0 ? tempoRestante : 0;
         }
@@ -668,10 +664,10 @@ async function adicionarTempoKey() {
     }
 
     let updateDoc = {};
-    if (k.hwid === "") {
-        updateDoc.durationMs = k.durationMs !== null ? k.durationMs + ms : null;
+    if (k.hwid === "Nenhum") {
+        updateDoc.durationMs = (k.durationMs !== null && k.durationMs !== 0) ? k.durationMs + ms : 0;
     } else {
-        updateDoc.expiresAt = k.expiresAt !== null ? k.expiresAt + ms : null;
+        updateDoc.expiresAt = (k.expiresAt !== null && k.expiresAt !== 0) ? k.expiresAt + ms : 0;
     }
 
     await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
@@ -689,13 +685,13 @@ function abrirModalTempo(key, op) {
     const k = keysData.find(x => x.key === key);
     let updateDoc = {};
 
-    if (k.hwid === "") {
+    if (k.hwid === "Nenhum") {
         let newDur = k.durationMs;
-        if(newDur !== null) newDur = op === '+' ? newDur + ms : newDur - ms;
+        if(newDur !== null && newDur !== 0) newDur = op === '+' ? newDur + ms : newDur - ms;
         updateDoc.durationMs = newDur;
     } else {
         let newExp = k.expiresAt;
-        if(newExp !== null) newExp = op === '+' ? newExp + ms : newExp - ms;
+        if(newExp !== null && newExp !== 0) newExp = op === '+' ? newExp + ms : newExp - ms;
         updateDoc.expiresAt = newExp;
     }
 
