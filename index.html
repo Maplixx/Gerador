@@ -63,7 +63,6 @@ button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 
 .hidden-element { display: none !important; }
 .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 900; display: none; }
 .overlay.open { display: block; }
-
 .user-list-item { display: flex; justify-content: space-between; background: #2a2a2a; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
 </style>
 </head>
@@ -360,6 +359,15 @@ function calcularMs(str) {
     return false;
 }
 
+function formataMsTexto(ms) {
+    if (ms === null) return "Permanente";
+    const d = Math.floor(ms / 86400000);
+    const h = Math.floor((ms % 86400000) / 3600000);
+    if (d > 0 && h > 0) return `${d}d e ${h}h`;
+    if (d > 0) return `${d} Dias`;
+    return `${h} Horas`;
+}
+
 function gerarString(length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let res = '';
@@ -463,7 +471,8 @@ async function gerarKey() {
         productName: produto.name,
         platform: produto.type,
         originalStr: tempoStr,
-        expiresAt: ms === null ? null : Date.now() + ms,
+        durationMs: ms,
+        expiresAt: null, 
         timeLeft: ms,
         hwid: "",
         status: "active",
@@ -525,7 +534,7 @@ function renderizarKeys() {
                 <div class="key-item">
                     <div class="key-info">
                         <strong class="text-orange">${k.key}</strong> [${k.productName} - ${k.platform}]<br>
-                        <span style="font-size:12px;" id="time-${k.key}" data-exp="${k.expiresAt}" data-stat="${k.status}" data-tl="${k.timeLeft}">...</span>
+                        <span style="font-size:12px;" id="time-${k.key}" data-exp="${k.expiresAt}" data-stat="${k.status}" data-dur="${k.durationMs}" data-hwid="${k.hwid}">...</span>
                         <br><span style="font-size:10px;color:#888;">HWID: ${k.hwid || "Nenhum"}</span>
                     </div>
                     <div class="key-actions">
@@ -553,16 +562,25 @@ function atualizarContadores() {
     document.querySelectorAll('[id^="time-"]').forEach(el => {
         const exp = el.getAttribute('data-exp');
         const stat = el.getAttribute('data-stat');
-        const tl = parseInt(el.getAttribute('data-tl'));
+        const durStr = el.getAttribute('data-dur');
+        const hwid = el.getAttribute('data-hwid');
+        
+        let dur = durStr === "null" ? null : parseInt(durStr);
 
-        if (exp === "null") {
+        if (dur === null) {
             el.innerText = "Tempo: Permanente";
             el.style.color = "#00ff00";
             return;
         }
 
+        if (hwid === "" && exp === "null") {
+            el.innerText = `Aguardando Uso (${formataMsTexto(dur)})`;
+            el.style.color = "#00e5ff";
+            return;
+        }
+
         if (stat === 'paused') {
-            el.innerText = `Pausado (Restava: ${Math.floor(tl / 3600000)}h)`;
+            el.innerText = `Pausado (Restava: ${formataMsTexto(dur)})`;
             el.style.color = "yellow";
             return;
         }
@@ -595,11 +613,15 @@ async function togglePause(key, pause) {
     let updateDoc = {};
     
     if (pause) {
-        let left = k.expiresAt !== null ? k.expiresAt - now : null;
-        updateDoc = { status: 'paused', timeLeft: left };
+        let left = k.expiresAt !== null ? k.expiresAt - now : k.durationMs;
+        updateDoc = { status: 'paused', durationMs: left };
     } else {
-        let newExp = k.timeLeft !== null ? now + k.timeLeft : null;
-        updateDoc = { status: 'active', expiresAt: newExp };
+        if(k.hwid === "") {
+            updateDoc = { status: 'active' };
+        } else {
+            let newExp = k.durationMs !== null ? now + k.durationMs : null;
+            updateDoc = { status: 'active', expiresAt: newExp };
+        }
     }
     
     await fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
@@ -611,7 +633,12 @@ async function resetarHwid() {
     const msg = document.getElementById('resMsg');
     const k = keysData.find(x => x.key === keyVal);
     if(k) {
-        await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify({ hwid: "" }) });
+        let updateDoc = { hwid: "", expiresAt: null };
+        if(k.expiresAt !== null) {
+            let tempoRestante = k.expiresAt - Date.now();
+            updateDoc.durationMs = tempoRestante > 0 ? tempoRestante : 0;
+        }
+        await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
         msg.innerText = "HWID Resetado!";
         msg.style.color = "#00ff00";
         carregarKeys();
@@ -640,8 +667,14 @@ async function adicionarTempoKey() {
         return;
     }
 
-    let newExp = k.expiresAt !== null ? k.expiresAt + ms : null;
-    await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify({ expiresAt: newExp }) });
+    let updateDoc = {};
+    if (k.hwid === "") {
+        updateDoc.durationMs = k.durationMs !== null ? k.durationMs + ms : null;
+    } else {
+        updateDoc.expiresAt = k.expiresAt !== null ? k.expiresAt + ms : null;
+    }
+
+    await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
     msg.innerText = "Tempo adicionado!";
     msg.style.color = "#00ff00";
     carregarKeys();
@@ -654,11 +687,19 @@ function abrirModalTempo(key, op) {
     if(!ms) return alert("Tempo invalido");
     
     const k = keysData.find(x => x.key === key);
-    let newExp = k.expiresAt;
-    if(newExp !== null) {
-        newExp = op === '+' ? newExp + ms : newExp - ms;
+    let updateDoc = {};
+
+    if (k.hwid === "") {
+        let newDur = k.durationMs;
+        if(newDur !== null) newDur = op === '+' ? newDur + ms : newDur - ms;
+        updateDoc.durationMs = newDur;
+    } else {
+        let newExp = k.expiresAt;
+        if(newExp !== null) newExp = op === '+' ? newExp + ms : newExp - ms;
+        updateDoc.expiresAt = newExp;
     }
-    fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify({ expiresAt: newExp }) }).then(carregarKeys);
+
+    fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) }).then(carregarKeys);
 }
 
 function copiar(texto) {
