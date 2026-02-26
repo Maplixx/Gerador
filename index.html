@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFTER CHEATS - PAINEL</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #121212; color: #ffffff; }
+.text-orange { color: #ff6600; }
+.bg-orange { background-color: #ff6600; color: #fff; border: none; cursor: pointer; }
+.bg-orange:hover { background-color: #e65c00; }
+input, select { background-color: #1e1e1e; border: 1px solid #ff6600; color: #fff; padding: 10px; border-radius: 5px; outline: none; width: 100%; margin-bottom: 15px; }
+button { padding: 10px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+.btn-small { padding: 5px 10px; font-size: 12px; margin-right: 5px; }
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0a0a0a; }
+.login-box { background-color: #1a1a1a; padding: 40px; border-radius: 10px; border: 2px solid #ff6600; width: 90%; max-width: 400px; text-align: center; }
+.login-box img { width: 100px; margin-bottom: 20px; }
+.dashboard { display: none; display: flex; height: 100vh; }
+.sidebar { width: 250px; background-color: #1a1a1a; border-right: 2px solid #ff6600; padding: 20px 0; transition: 0.3s; display: flex; flex-direction: column; }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 20px; border-bottom: 1px solid #333; }
+.sidebar-header img { width: 40px; }
+.menu-btn { background: none; border: none; color: #ff6600; font-size: 24px; cursor: pointer; }
+.sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; }
+.sidebar-menu li { padding: 15px 20px; cursor: pointer; border-left: 3px solid transparent; transition: 0.2s; }
+.sidebar-menu li:hover, .sidebar-menu li.active { background-color: #333; border-left: 3px solid #ff6600; color: #ff6600; }
+.main-content { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: #121212; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card { background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
+.key-item { display: flex; justify-content: space-between; align-items: center; background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff6600; }
+.key-info { flex-grow: 1; }
+.key-actions { display: flex; }
+.filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+.filter-bar select, .filter-bar input { width: auto; flex-grow: 1; margin-bottom: 0; }
+.stats { display: flex; gap: 15px; margin-bottom: 20px; font-size: 14px; flex-wrap: wrap; }
+.stats span { background-color: #1e1e1e; padding: 5px 10px; border-radius: 5px; border: 1px solid #ff6600; }
+.hidden-element { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <h2 class="text-orange" style="margin-bottom: 20px;">AFTER CHEATS</h2>
+        <input type="text" id="loginUser" placeholder="Usuário">
+        <input type="password" id="loginPass" placeholder="Senha">
+        <button class="bg-orange" style="width: 100%;" onclick="fazerLogin()">ENTRAR</button>
+        <p id="loginMsg" style="color: red; margin-top: 15px;"></p>
+    </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active" onclick="mudarAba('gerador', this)">Gerador</li>
+            <li onclick="mudarAba('visualizar', this)">Visualizar</li>
+            <li onclick="mudarAba('resetHwid', this)">Reset HWID</li>
+            <li onclick="mudarAba('mais', this)">Mais</li>
+            <li onclick="mudarAba('addProduto', this)">Add Produto</li>
+            <li onclick="mudarAba('addAdmin', this)">Add Admin</li>
+            <li id="menuSecreto" class="hidden-element" onclick="mudarAba('painelSecreto', this)">Painel Secreto</li>
+            <li onclick="sair()" style="margin-top: 50px; color: red;">Sair</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div id="gerador" class="tab-content active">
+            <h2 class="text-orange mb-4" style="margin-bottom: 20px;">Gerador de Keys</h2>
+            <div class="card">
+                <select id="genProduto"></select>
+                <input type="text" id="genTempo" placeholder="Tempo (Ex: 0, 1D, 7D, 30D, 12H)">
+                <button class="bg-orange" style="width: 100%;" onclick="gerarKey()">GERAR KEY</button>
+                <p id="genResult" class="text-orange" style="margin-top: 15px; font-weight: bold;"></p>
+            </div>
+        </div>
+
+        <div id="visualizar" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Visualizar Keys</h2>
+            <div class="stats">
+                <span>Total: <b id="stTotal">0</b></span>
+                <span>Online: <b id="stOnline">0</b></span>
+                <span>Usadas: <b id="stUsadas">0</b></span>
+                <span>Inválidas: <b id="stInvalidas">0</b></span>
+                <span>Sem Uso: <b id="stSemUso">0</b></span>
+            </div>
+            <div class="filter-bar">
+                <select id="filtroStatus" onchange="renderizarKeys()">
+                    <option value="todas">Todas</option>
+                    <option value="online">Online</option>
+                    <option value="usadas">Usadas</option>
+                    <option value="invalidas">Inválidas</option>
+                    <option value="semuso">Sem Uso</option>
+                </select>
+                <select id="filtroPlataforma" onchange="renderizarKeys()">
+                    <option value="todas">Plataforma: Todas</option>
+                    <option value="Emulador">Emulador</option>
+                    <option value="Mobile">Mobile</option>
+                </select>
+                <input type="text" id="buscaKey" placeholder="Pesquisar Key..." onkeyup="renderizarKeys()">
+            </div>
+            <div id="listaKeys"></div>
+        </div>
+
+        <div id="resetHwid" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Reset HWID</h2>
+            <div class="card">
+                <input type="text" id="resKey" placeholder="Cole a Key aqui">
+                <button class="bg-orange" style="width: 100%;" onclick="resetarHwid()">RESETAR</button>
+                <p id="resMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="mais" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Adicionar Tempo</h2>
+            <div class="card">
+                <input type="text" id="maisKey" placeholder="Cole a Key aqui">
+                <input type="text" id="maisTempo" placeholder="Tempo (Ex: 5D, 12H)">
+                <button class="bg-orange" style="width: 100%;" onclick="adicionarTempoKey()">CONFIRMAR</button>
+                <p id="maisMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="addProduto" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Adicionar Produto</h2>
+            <div class="card">
+                <input type="text" id="prodIdentificador" placeholder="Identificador (Ex: VIP REPLAY)">
+                <input type="text" id="prodPrefixo" placeholder="Prefixo (Ex: AFTER-CHEATS-REPLAY)">
+                <select id="prodTipo">
+                    <option value="Emulador">Emulador</option>
+                    <option value="Mobile">Mobile</option>
+                </select>
+                <input type="text" id="prodMsgErro" placeholder="Mensagem erro HWID">
+                <button class="bg-orange" style="width: 100%;" onclick="addProduto()">ADICIONAR</button>
+                <p id="prodMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="addAdmin" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Adicionar Admin</h2>
+            <div class="card">
+                <input type="text" id="admUser" placeholder="Usuário">
+                <input type="password" id="admPass" placeholder="Senha">
+                <button class="bg-orange" style="width: 100%;" onclick="addAdmin()">ADICIONAR</button>
+                <p id="admMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="painelSecreto" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 20px;">Painel Secreto</h2>
+            <div class="card">
+                <p>Acesso exclusivo Boss.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const DB_URL = "https://gerador-75d9f-default-rtdb.firebaseio.com";
+
+let currentUser = "";
+let isBoss = false;
+let keysData = [];
+let produtosData = [];
+
+async function fazerLogin() {
+    const u = document.getElementById('loginUser').value;
+    const p = document.getElementById('loginPass').value;
+    const msg = document.getElementById('loginMsg');
+    
+    if (u === 'Sevenzzx' && p === 'Xitador') {
+        currentUser = u;
+        isBoss = true;
+        iniciarPainel();
+        return;
+    }
+
+    try {
+        const res = await fetch(`${DB_URL}/admins/${u}.json`);
+        const data = await res.json();
+        if (data && data.password === p) {
+            currentUser = u;
+            isBoss = false;
+            iniciarPainel();
+        } else {
+            msg.innerText = "Usuário ou senha incorretos!";
+        }
+    } catch(e) {
+        msg.innerText = "Erro ao conectar.";
+    }
+}
+
+async function iniciarPainel() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'flex';
+    if (isBoss) document.getElementById('menuSecreto').classList.remove('hidden-element');
+    await carregarProdutos();
+    await carregarKeys();
+    setInterval(atualizarContadores, 1000);
+}
+
+function mudarAba(idAba, elementoLi) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(idAba).classList.add('active');
+    document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+    elementoLi.classList.add('active');
+}
+
+function toggleSidebar() {
+    const s = document.getElementById('sidebar');
+    s.style.width = s.style.width === '60px' ? '250px' : '60px';
+}
+
+function sair() {
+    location.reload();
+}
+
+function calcularMs(str) {
+    if (str === "0") return null;
+    const val = parseInt(str);
+    if (str.toUpperCase().endsWith('D')) return val * 86400000;
+    if (str.toUpperCase().endsWith('H')) return val * 3600000;
+    return 0;
+}
+
+function gerarString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let res = '';
+    for (let i = 0; i < length; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+    return res;
+}
+
+async function carregarProdutos() {
+    const res = await fetch(`${DB_URL}/produtos.json`);
+    const data = await res.json();
+    produtosData = data ? Object.values(data) : [];
+    const select = document.getElementById('genProduto');
+    select.innerHTML = "";
+    produtosData.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.name} (${p.type})</option>`;
+    });
+}
+
+async function addProduto() {
+    const nome = document.getElementById('prodIdentificador').value;
+    const pref = document.getElementById('prodPrefixo').value;
+    const tipo = document.getElementById('prodTipo').value;
+    const msgErr = document.getElementById('prodMsgErro').value;
+    const msg = document.getElementById('prodMsg');
+
+    if (!nome || !pref) return msg.innerText = "Preencha tudo!";
+    
+    const id = Date.now().toString();
+    const doc = { id: id, name: nome, prefix: pref, type: tipo, hwidErrorMsg: msgErr };
+    
+    await fetch(`${DB_URL}/produtos/${id}.json`, { method: 'PUT', body: JSON.stringify(doc) });
+    msg.innerText = "Produto adicionado!";
+    msg.style.color = "#00ff00";
+    carregarProdutos();
+}
+
+async function addAdmin() {
+    const u = document.getElementById('admUser').value;
+    const p = document.getElementById('admPass').value;
+    const msg = document.getElementById('admMsg');
+
+    if (!u || !p) return msg.innerText = "Preencha tudo!";
+    
+    await fetch(`${DB_URL}/admins/${u}.json`, { method: 'PUT', body: JSON.stringify({ password: p }) });
+    msg.innerText = "Admin adicionado!";
+    msg.style.color = "#00ff00";
+}
+
+async function gerarKey() {
+    const prodId = document.getElementById('genProduto').value;
+    const tempoStr = document.getElementById('genTempo').value;
+    const res = document.getElementById('genResult');
+
+    if (!prodId || tempoStr === "") return res.innerText = "Preencha o tempo!";
+    
+    const produto = produtosData.find(p => p.id === prodId);
+    const ms = calcularMs(tempoStr);
+    const keyString = `${produto.prefix}-${gerarString(6)}`;
+    
+    const doc = {
+        key: keyString,
+        productId: prodId,
+        productName: produto.name,
+        platform: produto.type,
+        originalStr: tempoStr,
+        expiresAt: ms === null ? null : Date.now() + ms,
+        timeLeft: ms,
+        hwid: "",
+        status: "active",
+        createdAt: Date.now()
+    };
+
+    await fetch(`${DB_URL}/keys/${keyString}.json`, { method: 'PUT', body: JSON.stringify(doc) });
+    res.innerText = "Key Gerada: " + keyString;
+    carregarKeys();
+}
+
+async function carregarKeys() {
+    const res = await fetch(`${DB_URL}/keys.json`);
+    const data = await res.json();
+    keysData = data ? Object.values(data) : [];
+    renderizarKeys();
+}
+
+function renderizarKeys() {
+    const lista = document.getElementById('listaKeys');
+    const fStatus = document.getElementById('filtroStatus').value;
+    const fPlat = document.getElementById('filtroPlataforma').value;
+    const busca = document.getElementById('buscaKey').value.toLowerCase();
+    
+    lista.innerHTML = "";
+    let stats = { total: 0, online: 0, usadas: 0, invalidas: 0, semuso: 0 };
+    const now = Date.now();
+
+    keysData.forEach(k => {
+        let isOnline = false, isUsada = false, isInv = false, isSemUso = false;
+        
+        if (k.expiresAt !== null && k.expiresAt < now && k.status !== 'paused') isInv = true;
+        else {
+            isOnline = true;
+            if (k.hwid) isUsada = true;
+            else isSemUso = true;
+        }
+
+        stats.total++;
+        if (isOnline) stats.online++;
+        if (isUsada) stats.usadas++;
+        if (isInv) stats.invalidas++;
+        if (isSemUso) stats.semuso++;
+
+        let show = true;
+        if (fStatus === 'online' && !isOnline) show = false;
+        if (fStatus === 'usadas' && !isUsada) show = false;
+        if (fStatus === 'invalidas' && !isInv) show = false;
+        if (fStatus === 'semuso' && !isSemUso) show = false;
+        if (fPlat !== 'todas' && k.platform !== fPlat) show = false;
+        if (busca && !k.key.toLowerCase().includes(busca)) show = false;
+
+        if (show) {
+            let btnPausePlay = k.status === 'paused' 
+                ? `<button class="bg-orange btn-small" onclick="togglePause('${k.key}', false)">▶</button>` 
+                : `<button class="bg-orange btn-small" onclick="togglePause('${k.key}', true)">⏸</button>`;
+            
+            lista.innerHTML += `
+                <div class="key-item">
+                    <div class="key-info">
+                        <strong class="text-orange">${k.key}</strong> [${k.productName} - ${k.platform}]<br>
+                        <span style="font-size:12px;" id="time-${k.key}" data-exp="${k.expiresAt}" data-stat="${k.status}" data-tl="${k.timeLeft}">...</span>
+                        <br><span style="font-size:10px;color:#888;">HWID: ${k.hwid || "Nenhum"}</span>
+                    </div>
+                    <div class="key-actions">
+                        <button class="bg-orange btn-small" onclick="abrirModalTempo('${k.key}', '+')">➕</button>
+                        <button class="bg-orange btn-small" onclick="abrirModalTempo('${k.key}', '-')">➖</button>
+                        ${btnPausePlay}
+                        <button class="bg-orange btn-small" onclick="copiar('${k.key}')">📋</button>
+                        <button class="bg-orange btn-small" style="background-color:red;" onclick="deletarKey('${k.key}')">🗑</button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    document.getElementById('stTotal').innerText = stats.total;
+    document.getElementById('stOnline').innerText = stats.online;
+    document.getElementById('stUsadas').innerText = stats.usadas;
+    document.getElementById('stInvalidas').innerText = stats.invalidas;
+    document.getElementById('stSemUso').innerText = stats.semuso;
+    atualizarContadores();
+}
+
+function atualizarContadores() {
+    const now = Date.now();
+    document.querySelectorAll('[id^="time-"]').forEach(el => {
+        const exp = el.getAttribute('data-exp');
+        const stat = el.getAttribute('data-stat');
+        const tl = parseInt(el.getAttribute('data-tl'));
+
+        if (exp === "null") {
+            el.innerText = "Tempo: Permanente";
+            el.style.color = "#00ff00";
+            return;
+        }
+
+        if (stat === 'paused') {
+            el.innerText = `Pausado (Restava: ${Math.floor(tl / 3600000)}h)`;
+            el.style.color = "yellow";
+            return;
+        }
+
+        const diff = parseInt(exp) - now;
+        if (diff <= 0) {
+            el.innerText = "Expirada";
+            el.style.color = "red";
+        } else {
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            el.innerText = `Expira em: ${d}d ${h}h ${m}m ${s}s`;
+            el.style.color = "#00ff00";
+        }
+    });
+}
+
+async function deletarKey(key) {
+    if(confirm('Tem certeza?')) {
+        await fetch(`${DB_URL}/keys/${key}.json`, { method: 'DELETE' });
+        carregarKeys();
+    }
+}
+
+async function togglePause(key, pause) {
+    const k = keysData.find(x => x.key === key);
+    const now = Date.now();
+    let updateDoc = {};
+    
+    if (pause) {
+        let left = k.expiresAt !== null ? k.expiresAt - now : null;
+        updateDoc = { status: 'paused', timeLeft: left };
+    } else {
+        let newExp = k.timeLeft !== null ? now + k.timeLeft : null;
+        updateDoc = { status: 'active', expiresAt: newExp };
+    }
+    
+    await fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
+    carregarKeys();
+}
+
+async function resetarHwid() {
+    const keyVal = document.getElementById('resKey').value;
+    const msg = document.getElementById('resMsg');
+    const k = keysData.find(x => x.key === keyVal);
+    if(k) {
+        await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify({ hwid: "" }) });
+        msg.innerText = "HWID Resetado!";
+        msg.style.color = "#00ff00";
+        carregarKeys();
+    } else {
+        msg.innerText = "Key não encontrada!";
+        msg.style.color = "red";
+    }
+}
+
+async function adicionarTempoKey() {
+    const keyVal = document.getElementById('maisKey').value;
+    const tempoStr = document.getElementById('maisTempo').value;
+    const msg = document.getElementById('maisMsg');
+    const ms = calcularMs(tempoStr);
+    
+    if(ms === false) return msg.innerText = "Tempo inválido!";
+
+    const k = keysData.find(x => x.key === keyVal);
+    if(!k) return msg.innerText = "Key não encontrada.";
+
+    let newExp = k.expiresAt !== null ? k.expiresAt + ms : null;
+    await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify({ expiresAt: newExp }) });
+    msg.innerText = "Tempo adicionado!";
+    msg.style.color = "#00ff00";
+    carregarKeys();
+}
+
+function abrirModalTempo(key, op) {
+    let t = prompt(`Quantos dias/horas quer ${op === '+' ? 'adicionar' : 'remover'}?`);
+    if(!t) return;
+    const ms = calcularMs(t);
+    if(!ms) return alert("Tempo invalido");
+    
+    const k = keysData.find(x => x.key === key);
+    let newExp = k.expiresAt;
+    if(newExp !== null) {
+        newExp = op === '+' ? newExp + ms : newExp - ms;
+    }
+    fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify({ expiresAt: newExp }) }).then(carregarKeys);
+}
+
+function copiar(texto) {
+    navigator.clipboard.writeText(texto);
+    alert('Key copiada!');
+}
+</script>
+</body>
+</html>
+
