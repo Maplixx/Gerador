@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>ANGEL XITER - PAINEL</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { background-color: #000000; color: #ffffff; overflow: hidden; }
+
+/* Paleta Monocromática */
+.text-orange { color: #ffffff; }
+.bg-orange { 
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+    color: #fff; 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito Liquid Glass Apple */
+.bg-orange::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+}
+
+.bg-orange:hover { 
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.bg-orange:active {
+    transform: translateY(0);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%);
+}
+
+input, select { 
+    background-color: rgba(255, 255, 255, 0.05); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    color: #fff; 
+    padding: 12px; 
+    border-radius: 8px; 
+    outline: none; 
+    width: 100%; 
+    margin-bottom: 15px; 
+    backdrop-filter: blur(5px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:focus, select:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+button { 
+    padding: 12px 20px; 
+    border-radius: 8px; 
+    font-weight: 600; 
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    letter-spacing: 0.5px;
+}
+
+.btn-small { padding: 6px 12px; font-size: 12px; margin-right: 5px; }
+
+.login-screen { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100vh; 
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+    z-index: 2000; 
+    position: absolute; 
+    width: 100%; 
+    top: 0; 
+    left: 0; 
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.login-box { 
+    background: rgba(20, 20, 20, 0.7); 
+    padding: 40px; 
+    border-radius: 18px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    width: 90%; 
+    max-width: 400px; 
+    text-align: center; 
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.login-box img { width: 100px; margin-bottom: 20px; filter: grayscale(1) brightness(2); }
+
+.loader { 
+    border: 3px solid rgba(255, 255, 255, 0.1); 
+    border-top: 3px solid #ffffff; 
+    border-radius: 50%; 
+    width: 35px; 
+    height: 35px; 
+    animation: spin 0.8s linear infinite; 
+    margin: 20px auto; 
+    display: none; 
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.dashboard { 
+    display: none; 
+    height: 100vh; 
+    flex-direction: column; 
+    opacity: 0; 
+    transform: scale(0.98); 
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); 
+}
+
+.dashboard.show { opacity: 1; transform: scale(1); }
+
+.top-bar { 
+    display: flex; 
+    align-items: center; 
+    padding: 15px 25px; 
+    background: rgba(15, 15, 15, 0.8); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+    z-index: 100; 
+    position: relative; 
+    backdrop-filter: blur(15px);
+}
+
+.menu-btn { 
+    background: none; 
+    border: none; 
+    color: #ffffff; 
+    font-size: 24px; 
+    cursor: pointer; 
+    margin-right: 15px; 
+    transition: transform 0.3s ease;
+}
+
+.menu-btn:hover { transform: scale(1.1); }
+
+.top-bar img { height: 30px; filter: grayscale(1) brightness(2); }
+
+.sidebar { 
+    position: fixed; 
+    left: -280px; 
+    top: 0; 
+    width: 260px; 
+    height: 100vh; 
+    background: rgba(10, 10, 10, 0.9); 
+    border-right: 1px solid rgba(255, 255, 255, 0.1); 
+    padding: 25px 0; 
+    transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 1000; 
+    overflow-y: auto; 
+    backdrop-filter: blur(25px);
+    box-shadow: 15px 0 30px rgba(0,0,0,0.5); 
+}
+
+.sidebar.open { left: 0; }
+
+.sidebar-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 25px 25px; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+}
+
+.sidebar-header img { width: 40px; filter: grayscale(1) brightness(2); }
+
+.close-btn { background: none; border: none; color: #ffffff; font-size: 22px; cursor: pointer; transition: opacity 0.3s; }
+.close-btn:hover { opacity: 0.7; }
+
+.sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; }
+.sidebar-menu li { 
+    padding: 14px 25px; 
+    cursor: pointer; 
+    border-left: 3px solid transparent; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.sidebar-menu li:hover, .sidebar-menu li.active { 
+    background: rgba(255, 255, 255, 0.05); 
+    border-left: 3px solid #ffffff; 
+    color: #ffffff; 
+}
+
+.main-content { 
+    flex-grow: 1; 
+    position: relative; 
+    overflow: hidden; 
+    background-color: #000000; 
+    height: calc(100vh - 62px); 
+}
+
+.tab-content { 
+    display: none; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    padding: 35px; 
+    overflow-y: auto; 
+}
+
+.tab-content.active { display: block; }
+
+/* Animações Premium de Transição */
+@keyframes slideUpIn { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideUpOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-30px); opacity: 0; } }
+@keyframes slideDownIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDownOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(30px); opacity: 0; } }
+
+.anim-up-in { animation: slideUpIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+.anim-up-out { animation: slideUpOut 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+.anim-down-in { animation: slideDownIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+.anim-down-out { animation: slideDownOut 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+.card { 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 25px; 
+    border-radius: 16px; 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    margin-bottom: 25px; 
+    backdrop-filter: blur(10px);
+}
+
+.key-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background: rgba(255, 255, 255, 0.04); 
+    padding: 18px; 
+    border-radius: 12px; 
+    margin-bottom: 12px; 
+    border-left: 4px solid #ffffff; 
+    flex-wrap: wrap; 
+    gap: 12px; 
+    transition: transform 0.3s ease;
+}
+
+.key-item:hover { transform: translateX(5px); background: rgba(255, 255, 255, 0.06); }
+
+.key-info { flex-grow: 1; }
+.key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.filter-bar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 25px; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+}
+
+.filter-bar select, .filter-bar input { width: auto; flex-grow: 1; margin-bottom: 0; }
+
+.stats { display: flex; gap: 12px; margin-bottom: 25px; font-size: 13px; flex-wrap: wrap; }
+.stats span { 
+    background: rgba(255, 255, 255, 0.05); 
+    padding: 7px 14px; 
+    border-radius: 20px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats b { color: #ffffff; }
+
+.hidden-element { display: none !important; }
+.overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background: rgba(0,0,0,0.4); 
+    z-index: 900; 
+    display: none; 
+    backdrop-filter: blur(4px);
+    transition: opacity 0.4s;
+}
+.overlay.open { display: block; opacity: 1; }
+
+.user-list-item { 
+    display: flex; 
+    justify-content: space-between; 
+    background: rgba(255, 255, 255, 0.04); 
+    padding: 12px 18px; 
+    margin-bottom: 8px; 
+    border-radius: 10px; 
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <h2 class="text-orange" style="margin-bottom: 25px; font-weight: 700; letter-spacing: 1px;">ANGEL XITER</h2>
+        <div id="loginFormInputs">
+            <input type="text" id="loginUser" placeholder="Usuário">
+            <input type="password" id="loginPass" placeholder="Senha">
+            <button class="bg-orange" style="width: 100%;" onclick="tentarLogin()">ENTRAR</button>
+        </div>
+        <div class="loader" id="loginLoader"></div>
+        <p id="loginMsg" style="color: #ff4d4d; margin-top: 15px; font-size: 14px;"></p>
+    </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+    <div class="top-bar">
+        <button class="menu-btn" onclick="abrirSidebar()">☰</button>
+        <h3 class="text-orange" style="font-weight: 700; letter-spacing: 1px;">ANGEL XITER</h3>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="fecharSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <button class="close-btn" onclick="fecharSidebar()">✕</button>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active" onclick="mudarAba('gerador', 0, this)">Gerador</li>
+            <li onclick="mudarAba('visualizar', 1, this)">Visualizar</li>
+            <li onclick="mudarAba('resetHwid', 2, this)">Reset HWID</li>
+            <li onclick="mudarAba('mais', 3, this)">Mais Tempo</li>
+            <li onclick="mudarAba('addProduto', 4, this)">Add Produto</li>
+            <li id="menuAddAdmin" class="hidden-element" onclick="mudarAba('addAdmin', 5, this)">Add Admin</li>
+            <li id="menuUsuarios" class="hidden-element" onclick="mudarAba('usuarios', 6, this)">Usuários</li>
+            <li id="menuSecreto" class="hidden-element" onclick="mudarAba('painelSecreto', 7, this)">Painel Secreto</li>
+            <li onclick="sair()" style="margin-top: 50px; color: #ff4d4d;">Sair</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div id="gerador" class="tab-content active">
+            <h2 class="text-orange mb-4" style="margin-bottom: 25px;">Gerador de Keys</h2>
+            <div class="card">
+                <select id="genProduto"></select>
+                <input type="text" id="genTempo" placeholder="Tempo (Ex: 0, 1D, 7D, 30D, 12H)">
+                <button class="bg-orange" style="width: 100%;" onclick="gerarKey()">GERAR KEY</button>
+                <p id="genResult" class="text-orange" style="margin-top: 15px; font-weight: bold;"></p>
+            </div>
+        </div>
+
+        <div id="visualizar" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Visualizar Keys</h2>
+            <div class="stats">
+                <span>Total: <b id="stTotal">0</b></span>
+                <span>Online: <b id="stOnline">0</b></span>
+                <span>Usadas: <b id="stUsadas">0</b></span>
+                <span>Inválidas: <b id="stInvalidas">0</b></span>
+                <span>Sem Uso: <b id="stSemUso">0</b></span>
+            </div>
+            <div class="filter-bar">
+                <select id="filtroStatus" onchange="renderizarKeys()">
+                    <option value="todas">Todas</option>
+                    <option value="online">Online</option>
+                    <option value="usadas">Usadas</option>
+                    <option value="invalidas">Inválidas</option>
+                    <option value="semuso">Sem Uso</option>
+                </select>
+                <select id="filtroPlataforma" onchange="renderizarKeys()">
+                    <option value="todas">Plataforma: Todas</option>
+                    <option value="Emulador">Emulador</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Multiplos">Múltiplos</option>
+                </select>
+                <input type="text" id="buscaKey" placeholder="Pesquisar Key..." onkeyup="renderizarKeys()">
+            </div>
+            <div id="listaKeys"></div>
+        </div>
+
+        <div id="resetHwid" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Reset HWID</h2>
+            <div class="card">
+                <input type="text" id="resKey" placeholder="Cole a Key aqui">
+                <button class="bg-orange" style="width: 100%;" onclick="resetarHwid()">RESETAR</button>
+                <p id="resMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="mais" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Adicionar Tempo</h2>
+            <div class="card">
+                <input type="text" id="maisKey" placeholder="Cole a Key aqui">
+                <input type="text" id="maisTempo" placeholder="Tempo (Ex: 5D, 12H)">
+                <button class="bg-orange" style="width: 100%;" onclick="adicionarTempoKey()">CONFIRMAR</button>
+                <p id="maisMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="addProduto" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Adicionar Produto</h2>
+            <div class="card">
+                <input type="text" id="prodIdentificador" placeholder="Identificador (Ex: VIP REPLAY)">
+                <input type="text" id="prodPrefixo" placeholder="Prefixo (Ex: ANGEL-XITER)">
+                <select id="prodTipo">
+                    <option value="Emulador">Emulador</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Multiplos">Múltiplos</option>
+                </select>
+                <input type="text" id="prodMsgErro" placeholder="Mensagem erro HWID custom">
+                <button class="bg-orange" style="width: 100%;" onclick="addProduto()">ADICIONAR</button>
+                <p id="prodMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="addAdmin" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Adicionar Admin</h2>
+            <div class="card">
+                <input type="text" id="admUser" placeholder="Usuário">
+                <input type="password" id="admPass" placeholder="Senha">
+                <select id="admRole">
+                    <option value="admin">Admin Normal</option>
+                    <option value="boss">Boss (Acesso Total)</option>
+                </select>
+                <button class="bg-orange" style="width: 100%;" onclick="addAdmin()">ADICIONAR</button>
+                <p id="admMsg" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+
+        <div id="usuarios" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Gerenciar Usuários</h2>
+            <div class="card" id="listaAdmins"></div>
+        </div>
+
+        <div id="painelSecreto" class="tab-content">
+            <h2 class="text-orange" style="margin-bottom: 25px;">Painel Secreto</h2>
+            <div class="card">
+                <p>Acesso exclusivo Boss.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const DB_URL = "https://gerador-75d9f-default-rtdb.firebaseio.com";
+
+let currentUser = "";
+let isBoss = false;
+let keysData = [];
+let produtosData = [];
+let adminsData = [];
+let currentTabIndex = 0;
+
+window.onload = function() {
+    const savedUser = localStorage.getItem("angelxiter_user");
+    const savedPass = localStorage.getItem("angelxiter_pass");
+    if(savedUser && savedPass) {
+        document.getElementById('loginUser').value = savedUser;
+        document.getElementById('loginPass').value = savedPass;
+        tentarLogin();
+    }
+}
+
+async function tentarLogin() {
+    const u = document.getElementById('loginUser').value;
+    const p = document.getElementById('loginPass').value;
+    const msg = document.getElementById('loginMsg');
+    const formInputs = document.getElementById('loginFormInputs');
+    const loader = document.getElementById('loginLoader');
+
+    if(!u || !p) {
+        msg.innerText = "Preencha tudo!";
+        return;
+    }
+
+    formInputs.style.display = 'none';
+    loader.style.display = 'block';
+    msg.innerText = "";
+
+    try {
+        const res = await fetch(`${DB_URL}/admins/${u}.json`);
+        const data = await res.json();
+        if (data && data.password === p) {
+            currentUser = u;
+            isBoss = (data.role === 'boss');
+            salvarCredenciais(u, p);
+            setTimeout(iniciarPainel, 800);
+        } else {
+            throw new Error("invalido");
+        }
+    } catch(e) {
+        loader.style.display = 'none';
+        formInputs.style.display = 'block';
+        msg.innerText = "Usuário ou senha incorretos!";
+        localStorage.removeItem("angelxiter_user");
+        localStorage.removeItem("angelxiter_pass");
+    }
+}
+
+function salvarCredenciais(u, p) {
+    localStorage.setItem("angelxiter_user", u);
+    localStorage.setItem("angelxiter_pass", p);
+}
+
+async function iniciarPainel() {
+    const loginScreen = document.getElementById('loginScreen');
+    const dash = document.getElementById('dashboard');
+    
+    loginScreen.style.opacity = '0';
+    setTimeout(() => {
+        loginScreen.style.display = 'none';
+        dash.style.display = 'flex';
+        setTimeout(() => dash.classList.add('show'), 50);
+    }, 500);
+
+    if (isBoss) {
+        document.getElementById('menuAddAdmin').classList.remove('hidden-element');
+        document.getElementById('menuUsuarios').classList.remove('hidden-element');
+        document.getElementById('menuSecreto').classList.remove('hidden-element');
+    }
+
+    await carregarProdutos();
+    await carregarKeys();
+    if(isBoss) await carregarAdmins();
+    setInterval(atualizarContadores, 1000);
+}
+
+async function carregarProdutos() {
+    const res = await fetch(`${DB_URL}/produtos.json`);
+    const data = await res.json();
+    produtosData = data ? Object.values(data) : [];
+    const select = document.getElementById('genProduto');
+    select.innerHTML = "";
+    produtosData.forEach(p => {
+        select.innerHTML += `<option value="${p.identificador}">${p.identificador} [${p.tipo}]</option>`;
+    });
+}
+
+async function carregarKeys() {
+    const res = await fetch(`${DB_URL}/keys.json`);
+    const data = await res.json();
+    keysData = data ? Object.values(data) : [];
+    renderizarKeys();
+}
+
+async function carregarAdmins() {
+    const res = await fetch(`${DB_URL}/admins.json`);
+    const data = await res.json();
+    adminsData = data ? Object.entries(data).map(([user, val]) => ({ user, ...val })) : [];
+    renderizarAdmins();
+}
+
+function abrirSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+}
+
+function fecharSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+}
+
+function mudarAba(abaId, index, el) {
+    const abas = document.querySelectorAll('.tab-content');
+    const itens = document.querySelectorAll('.sidebar-menu li');
+    const antigaAba = document.querySelector('.tab-content.active');
+    const novaAba = document.getElementById(abaId);
+
+    if (antigaAba === novaAba) {
+        fecharSidebar();
+        return;
+    }
+
+    const isUp = index > currentTabIndex;
+    
+    antigaAba.classList.add(isUp ? 'anim-up-out' : 'anim-down-out');
+    
+    setTimeout(() => {
+        abas.forEach(a => {
+            a.classList.remove('active', 'anim-up-in', 'anim-up-out', 'anim-down-in', 'anim-down-out');
+        });
+        itens.forEach(i => i.classList.remove('active'));
+
+        novaAba.classList.add('active');
+        novaAba.classList.add(isUp ? 'anim-up-in' : 'anim-down-in');
+        el.classList.add('active');
+        currentTabIndex = index;
+    }, 400);
+
+    fecharSidebar();
+}
+
+function renderizarKeys() {
+    const lista = document.getElementById('listaKeys');
+    const fStatus = document.getElementById('filtroStatus').value;
+    const fPlat = document.getElementById('filtroPlataforma').value;
+    const busca = document.getElementById('buscaKey').value.toLowerCase();
+    
+    lista.innerHTML = "";
+    let stats = { total: 0, online: 0, usadas: 0, invalidas: 0, semuso: 0 };
+    const now = Date.now();
+
+    keysData.forEach(k => {
+        let isOnline = false, isUsada = false, isInv = false, isSemUso = false;
+        
+        if (k.expiresAt !== null && k.expiresAt !== 0 && k.expiresAt < now && k.status !== 'paused') isInv = true;
+        else {
+            isOnline = true;
+            if (k.hwid !== "Nenhum") isUsada = true;
+            else isSemUso = true;
+        }
+
+        stats.total++;
+        if (isOnline) stats.online++;
+        if (isUsada) stats.usadas++;
+        if (isInv) stats.invalidas++;
+        if (isSemUso) stats.semuso++;
+
+        let show = true;
+        if (fStatus === 'online' && !isOnline) show = false;
+        if (fStatus === 'usadas' && !isUsada) show = false;
+        if (fStatus === 'invalidas' && !isInv) show = false;
+        if (fStatus === 'semuso' && !isSemUso) show = false;
+        if (fPlat !== 'todas' && k.platform !== fPlat) show = false;
+        if (busca && !k.key.toLowerCase().includes(busca)) show = false;
+
+        if (show) {
+            let btnPausePlay = k.status === 'paused' 
+                ? `<button class="bg-orange btn-small" onclick="togglePause('${k.key}', false)">▶</button>` 
+                : `<button class="bg-orange btn-small" onclick="togglePause('${k.key}', true)">⏸</button>`;
+            
+            lista.innerHTML += `
+                <div class="key-item">
+                    <div class="key-info">
+                        <strong class="text-orange">${k.key}</strong> [${k.productName} - ${k.platform}]<br>
+                        <span style="font-size:12px;" id="time-${k.key}" data-exp="${k.expiresAt}" data-stat="${k.status}" data-dur="${k.durationMs}" data-hwid="${k.hwid}">...</span>
+                        <br><span style="font-size:10px;color:#888;">HWID: ${k.hwid}</span>
+                    </div>
+                    <div class="key-actions">
+                        <button class="bg-orange btn-small" onclick="abrirModalTempo('${k.key}', '+')">➕</button>
+                        <button class="bg-orange btn-small" onclick="abrirModalTempo('${k.key}', '-')">➖</button>
+                        ${btnPausePlay}
+                        <button class="bg-orange btn-small" onclick="copiar('${k.key}')">📋</button>
+                        <button class="bg-orange btn-small" style="background-color:#ff4d4d;" onclick="deletarKey('${k.key}')">🗑</button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    document.getElementById('stTotal').innerText = stats.total;
+    document.getElementById('stOnline').innerText = stats.online;
+    document.getElementById('stUsadas').innerText = stats.usadas;
+    document.getElementById('stInvalidas').innerText = stats.invalidas;
+    document.getElementById('stSemUso').innerText = stats.semuso;
+    atualizarContadores();
+}
+
+function atualizarContadores() {
+    const now = Date.now();
+    document.querySelectorAll('[id^="time-"]').forEach(el => {
+        const expStr = el.getAttribute('data-exp');
+        const stat = el.getAttribute('data-stat');
+        const durStr = el.getAttribute('data-dur');
+        const hwid = el.getAttribute('data-hwid');
+        
+        let exp = (expStr === "null" || expStr === "0") ? null : parseInt(expStr);
+        let dur = (durStr === "null" || durStr === "0") ? null : parseInt(durStr);
+
+        if (dur === null && exp === null) {
+            el.innerText = "Tempo: Permanente";
+            el.style.color = "#ffffff";
+            return;
+        }
+
+        if (hwid === "Nenhum" && exp === null) {
+            el.innerText = `Aguardando Uso (${formataMsTexto(dur)})`;
+            el.style.color = "#ffffff";
+            return;
+        }
+
+        if (stat === 'paused') {
+            el.innerText = `Pausado (Restava: ${formataMsTexto(dur)})`;
+            el.style.color = "#888";
+            return;
+        }
+
+        const diff = exp - now;
+        if (diff <= 0) {
+            el.innerText = "Expirada";
+            el.style.color = "#ff4d4d";
+        } else {
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            el.innerText = `Expira em: ${d}d ${h}h ${m}m ${s}s`;
+            el.style.color = "#ffffff";
+        }
+    });
+}
+
+async function deletarKey(key) {
+    if(confirm('Tem certeza?')) {
+        await fetch(`${DB_URL}/keys/${key}.json`, { method: 'DELETE' });
+        carregarKeys();
+    }
+}
+
+async function togglePause(key, pause) {
+    const k = keysData.find(x => x.key === key);
+    const now = Date.now();
+    let updateDoc = {};
+    
+    if (pause) {
+        let left = (k.expiresAt !== null && k.expiresAt !== 0) ? k.expiresAt - now : k.durationMs;
+        updateDoc = { status: 'paused', durationMs: left };
+    } else {
+        if(k.hwid === "Nenhum") {
+            updateDoc = { status: 'active' };
+        } else {
+            let newExp = (k.durationMs !== null && k.durationMs !== 0) ? now + k.durationMs : 0;
+            updateDoc = { status: 'active', expiresAt: newExp };
+        }
+    }
+    
+    await fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
+    carregarKeys();
+}
+
+async function resetarHwid() {
+    const keyVal = document.getElementById('resKey').value;
+    const msg = document.getElementById('resMsg');
+    const k = keysData.find(x => x.key === keyVal);
+    if(k) {
+        let updateDoc = { hwid: "Nenhum", expiresAt: 0 };
+        if(k.expiresAt !== null && k.expiresAt !== 0) {
+            let tempoRestante = k.expiresAt - Date.now();
+            updateDoc.durationMs = tempoRestante > 0 ? tempoRestante : 0;
+        }
+        await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
+        msg.innerText = "HWID Resetado!";
+        msg.style.color = "#ffffff";
+        carregarKeys();
+    } else {
+        msg.innerText = "Key não encontrada!";
+        msg.style.color = "#ff4d4d";
+    }
+}
+
+async function adicionarTempoKey() {
+    const keyVal = document.getElementById('maisKey').value;
+    const tempoStr = document.getElementById('maisTempo').value;
+    const msg = document.getElementById('maisMsg');
+    const ms = calcularMs(tempoStr);
+    
+    if(ms === false) {
+        msg.innerText = "Tempo inválido!";
+        msg.style.color = "#ff4d4d";
+        return;
+    }
+
+    const k = keysData.find(x => x.key === keyVal);
+    if(!k) {
+        msg.innerText = "Key não encontrada.";
+        msg.style.color = "#ff4d4d";
+        return;
+    }
+
+    let updateDoc = {};
+    if (k.hwid === "Nenhum") {
+        updateDoc.durationMs = (k.durationMs !== null && k.durationMs !== 0) ? k.durationMs + ms : 0;
+    } else {
+        updateDoc.expiresAt = (k.expiresAt !== null && k.expiresAt !== 0) ? k.expiresAt + ms : 0;
+    }
+
+    await fetch(`${DB_URL}/keys/${keyVal}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) });
+    msg.innerText = "Tempo adicionado!";
+    msg.style.color = "#ffffff";
+    carregarKeys();
+}
+
+function abrirModalTempo(key, op) {
+    let t = prompt(`Quantos dias/horas quer ${op === '+' ? 'adicionar' : 'remover'}?`);
+    if(!t) return;
+    const ms = calcularMs(t);
+    if(!ms) return alert("Tempo invalido");
+    
+    const k = keysData.find(x => x.key === key);
+    let updateDoc = {};
+
+    if (k.hwid === "Nenhum") {
+        let newDur = k.durationMs;
+        if(newDur !== null && newDur !== 0) newDur = op === '+' ? newDur + ms : newDur - ms;
+        updateDoc.durationMs = newDur;
+    } else {
+        let newExp = k.expiresAt;
+        if(newExp !== null && newExp !== 0) newExp = op === '+' ? newExp + ms : newExp - ms;
+        updateDoc.expiresAt = newExp;
+    }
+
+    fetch(`${DB_URL}/keys/${key}.json`, { method: 'PATCH', body: JSON.stringify(updateDoc) }).then(carregarKeys);
+}
+
+function copiar(texto) {
+    navigator.clipboard.writeText(texto);
+    alert('Key copiada!');
+}
+
+function sair() {
+    localStorage.removeItem("angelxiter_user");
+    localStorage.removeItem("angelxiter_pass");
+    location.reload();
+}
+
+async function gerarKey() {
+    const prod = document.getElementById('genProduto').value;
+    const tempoStr = document.getElementById('genTempo').value;
+    const res = document.getElementById('genResult');
+    const ms = calcularMs(tempoStr);
+    
+    if(ms === false) {
+        res.innerText = "Tempo inválido!";
+        return;
+    }
+
+    const p = produtosData.find(x => x.identificador === prod);
+    const key = p.prefixo + "-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+    
+    const newKey = {
+        key,
+        productName: p.identificador,
+        platform: p.tipo,
+        durationMs: ms,
+        expiresAt: 0,
+        hwid: "Nenhum",
+        status: "active",
+        createdAt: Date.now()
+    };
+
+    await fetch(`${DB_URL}/keys/${key}.json`, { method: 'PUT', body: JSON.stringify(newKey) });
+    res.innerText = "Key Gerada: " + key;
+    carregarKeys();
+}
+
+async function addProduto() {
+    const iden = document.getElementById('prodIdentificador').value;
+    const pref = document.getElementById('prodPrefixo').value;
+    const tipo = document.getElementById('prodTipo').value;
+    const msgErr = document.getElementById('prodMsgErro').value;
+    const msg = document.getElementById('prodMsg');
+
+    if(!iden || !pref) {
+        msg.innerText = "Preencha tudo!";
+        return;
+    }
+
+    const newProd = { identificador: iden, prefixo: pref, tipo, msgErro: msgErr };
+    await fetch(`${DB_URL}/produtos/${iden}.json`, { method: 'PUT', body: JSON.stringify(newProd) });
+    msg.innerText = "Produto Adicionado!";
+    carregarProdutos();
+}
+
+async function addAdmin() {
+    const u = document.getElementById('admUser').value;
+    const p = document.getElementById('admPass').value;
+    const r = document.getElementById('admRole').value;
+    const msg = document.getElementById('admMsg');
+
+    if(!u || !p) {
+        msg.innerText = "Preencha tudo!";
+        return;
+    }
+
+    const newAdm = { password: p, role: r };
+    await fetch(`${DB_URL}/admins/${u}.json`, { method: 'PUT', body: JSON.stringify(newAdm) });
+    msg.innerText = "Admin Adicionado!";
+    carregarAdmins();
+}
+
+function renderizarAdmins() {
+    const lista = document.getElementById('listaAdmins');
+    lista.innerHTML = "";
+    adminsData.forEach(a => {
+        lista.innerHTML += `
+            <div class="user-list-item">
+                <span><b>${a.user}</b> (${a.role})</span>
+                <button class="bg-orange btn-small" style="background-color:#ff4d4d;" onclick="deletarAdmin('${a.user}')">🗑</button>
+            </div>
+        `;
+    });
+}
+
+async function deletarAdmin(u) {
+    if(u === currentUser) return alert("Você não pode se deletar!");
+    if(confirm('Deletar admin?')) {
+        await fetch(`${DB_URL}/admins/${u}.json`, { method: 'DELETE' });
+        carregarAdmins();
+    }
+}
+
+function calcularMs(str) {
+    if(str === "0") return 0;
+    const num = parseInt(str);
+    if(isNaN(num)) return false;
+    const unit = str.replace(/[0-9]/g, '').toUpperCase();
+    if(unit === "D") return num * 86400000;
+    if(unit === "H") return num * 3600000;
+    if(unit === "M") return num * 60000;
+    return num * 86400000;
+}
+
+function formataMsTexto(ms) {
+    if(ms === 0 || ms === null) return "Permanente";
+    const d = Math.floor(ms / 86400000);
+    const h = Math.floor((ms % 86400000) / 3600000);
+    if(d > 0) return `${d}d ${h}h`;
+    return `${h}h`;
+}
+</script>
+</body>
+</html>
